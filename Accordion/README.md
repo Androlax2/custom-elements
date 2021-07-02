@@ -45,3 +45,15 @@ nav-accordion can have two attributes :
 allow-toggle => Allow for each toggle to both open and close its section. Makes it possible for all sections to be closed. Assumes only one section may be open.
 
 allow-multiple => Allow for multiple accordion sections to be expanded at the same time. Assumes data-allow-toggle otherwise the toggle on open sections would be disabled.
+
+
+
+nav-accordion-item NEED 2 attributes :
+
+(string) id => Id of the section, must be a slug, and the DOM should not already have an element with that ID.
+
+(string) label => The name of the section
+
+And can have an extra attribute :
+
+(boolean) expanded => To expand or not the accordion
