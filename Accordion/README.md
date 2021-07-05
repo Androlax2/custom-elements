@@ -1,4 +1,4 @@
-Use : 
+Usage : 
 
 ```javascript
 customElements.define('nav-accordion', Accordion);
