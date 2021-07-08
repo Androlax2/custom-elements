@@ -135,10 +135,12 @@ export default class AccordionItem extends HTMLElement {
     // On click
     this.$button.addEventListener('click', (e) => {
       e.preventDefault();
-      if (!this.$accordion.allowToggle) {
-        this.expanded = true;
-      } else {
-        this.expanded = !this.expanded;
+      if (!this.$button.ariaDisabled) {
+        if (!this.$accordion.allowToggle) {
+          this.expanded = true;
+        } else {
+          this.expanded = !this.expanded;
+        }
       }
       return false;
     });
