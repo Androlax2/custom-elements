@@ -9,18 +9,6 @@ export default class AccordionItem extends HTMLElement {
     if (!this.id) {
       throw new Error('Please specify an ID for the accordion item.');
     }
-    this._checkIdIsCorrect();
-    this._checkIdDoesnotExist();
-
-    this.content = this.innerHTML;
-    this.innerHTML = null;
-    this.labelId = `label-${this.id}`;
-
-    this._addSection();
-    this._addButton();
-
-    this._cacheDOM();
-    this._checkDOMIsCorrect();
   }
 
   /**
@@ -52,12 +40,14 @@ export default class AccordionItem extends HTMLElement {
         this.$button.ariaDisabled = true;
       }
       if (!this.$accordion.allowMultiple) {
-        this.$accordion.activeItems.forEach($activeItem => $activeItem.expanded = false);
+        this.$accordion.activeItems.forEach(($activeItem) => ($activeItem.expanded = false));
       }
       this.setAttribute('expanded', 'true');
       this.$button.ariaExpanded = true;
       this.$section.ariaHidden = false;
-      this.$section.querySelectorAll(this._getFocusableElements()).forEach($focusableElement => $focusableElement.setAttribute('tabindex', '0'));
+      this.$section
+        .querySelectorAll(this._getFocusableElements())
+        .forEach(($focusableElement) => $focusableElement.setAttribute('tabindex', '0'));
     } else {
       if (!this.$accordion.allowToggle) {
         this.$button.removeAttribute('aria-disabled');
@@ -65,7 +55,9 @@ export default class AccordionItem extends HTMLElement {
       this.setAttribute('expanded', 'false');
       this.$button.ariaExpanded = false;
       this.$section.ariaHidden = true;
-      this.$section.querySelectorAll(this._getFocusableElements()).forEach($focusableElement => $focusableElement.setAttribute('tabindex', '-1'));
+      this.$section
+        .querySelectorAll(this._getFocusableElements())
+        .forEach(($focusableElement) => $focusableElement.setAttribute('tabindex', '-1'));
     }
   }
 
@@ -90,7 +82,7 @@ export default class AccordionItem extends HTMLElement {
       'input:not([disabled])',
       'select:not([disabled])',
       'textarea:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])'
+      '[tabindex]:not([tabindex="-1"])',
     ];
   }
 
@@ -121,9 +113,25 @@ export default class AccordionItem extends HTMLElement {
   }
 
   connectedCallback() {
+    this._checkIdIsCorrect();
+    this._checkIdDoesnotExist();
+
+    this.content = this.innerHTML;
+    this.innerHTML = null;
+    this.labelId = `label-${this.id}`;
+
+    this._addSection();
+    this._addButton();
+
+    this._cacheDOM();
+    this._checkDOMIsCorrect();
+
     this._accessibleTrigger();
     this._accessibleSection();
     this._eventListeners();
+    if (!this.$accordion.allowUserEvents) {
+      this.$button.ariaDisabled = true;
+    }
   }
 
   /**
@@ -132,18 +140,22 @@ export default class AccordionItem extends HTMLElement {
    * @private
    */
   _eventListeners = () => {
-    // On click
     this.$button.addEventListener('click', (e) => {
       e.preventDefault();
-      if (!this.$button.ariaDisabled) {
-        if (!this.$accordion.allowToggle) {
-          this.expanded = true;
-        } else {
-          this.expanded = !this.expanded;
-        }
-      }
       return false;
     });
+    if (this.$accordion.allowUserEvents) {
+      // On click
+      this.$button.addEventListener('click', (e) => {
+        if (!this.$button.ariaDisabled) {
+          if (!this.$accordion.allowToggle) {
+            this.expanded = true;
+          } else {
+            this.expanded = !this.expanded;
+          }
+        }
+      });
+    }
 
     // On keydown :
     // Space
@@ -154,14 +166,16 @@ export default class AccordionItem extends HTMLElement {
     // End
     this.$button.addEventListener('keydown', (e) => {
       // Space / Enter => Open the accordion
-      if (e.code === 'Space' || e.code === 'Enter') {
-        e.preventDefault();
-        if (!this.$accordion.allowToggle) {
-          this.expanded = true;
-        } else {
-          this.expanded = !this.expanded;
+      if (this.$accordion.allowUserEvents) {
+        if (e.code === 'Space' || e.code === 'Enter') {
+          e.preventDefault();
+          if (!this.$accordion.allowToggle) {
+            this.expanded = true;
+          } else {
+            this.expanded = !this.expanded;
+          }
+          return false;
         }
-        return false;
       }
 
       // Up arrow => Go to the previous accordion
@@ -191,7 +205,6 @@ export default class AccordionItem extends HTMLElement {
         this.$accordion.goToLastItem();
         return false;
       }
-
     });
   };
 
@@ -201,9 +214,7 @@ export default class AccordionItem extends HTMLElement {
    * @private
    */
   _checkDOMIsCorrect() {
-    if (!(
-        this.$accordion instanceof Accordion
-    )) {
+    if (!(this.$accordion instanceof Accordion)) {
       throw new Error(`Accordion item should have an Accordion as parent. ${this.$accordion} is not an instance of Accordion.`);
     }
   }
