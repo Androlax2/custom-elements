@@ -6,9 +6,9 @@ import AccordionItem from './AccordionItem';
 export default class Accordion extends HTMLElement {
   constructor() {
     super();
-    customElements.define('nav-accordion-item', AccordionItem);
-    this._cacheDOM();
-    this._checkDOMIsCorrect();
+    if (typeof customElements.get('nav-accordion-item') === 'undefined') {
+      customElements.define('nav-accordion-item', AccordionItem);
+    }
     if (!this.allowMultiple && this.activeItems.length > 1) {
       throw new Error('You cannot define more than one expanded accordion if your accordion does not have the "allow-multiple" attribute.');
     }
@@ -39,11 +39,25 @@ export default class Accordion extends HTMLElement {
   }
 
   /**
+   * Do the accordion allow user to click on the accordion items ?
+   *
+   * Default to true.
+   *
+   * @returns {boolean}
+   */
+  get allowUserEvents() {
+    if (!this.hasAttribute('allow-user-events')) {
+      return true;
+    }
+    return this.getAttribute('allow-user-events') === 'true';
+  }
+
+  /**
    * Return active accordion items.
    */
   get activeItems() {
     if (typeof this.$accordionItems === 'undefined') return [];
-    return [...this.$accordionItems].filter($accordionItem => $accordionItem.expanded === true);
+    return [...this.$accordionItems].filter(($accordionItem) => $accordionItem.expanded === true);
   }
 
   /**
@@ -66,7 +80,7 @@ export default class Accordion extends HTMLElement {
    * @param {AccordionItem} item
    */
   goToPreviousItem(item) {
-    const itemIndex = [...this.$accordionItems].findIndex($accordionItem => $accordionItem === item);
+    const itemIndex = [...this.$accordionItems].findIndex(($accordionItem) => $accordionItem === item);
     let goToIndex = itemIndex - 1;
     if (itemIndex === 0) {
       goToIndex = this.$accordionItems.length - 1;
@@ -81,7 +95,7 @@ export default class Accordion extends HTMLElement {
    * @param {AccordionItem} item
    */
   goToNextItem(item) {
-    const itemIndex = [...this.$accordionItems].findIndex($accordionItem => $accordionItem === item);
+    const itemIndex = [...this.$accordionItems].findIndex(($accordionItem) => $accordionItem === item);
     let goToIndex = itemIndex + 1;
     if (itemIndex === this.$accordionItems.length - 1) {
       goToIndex = 0;
@@ -100,6 +114,8 @@ export default class Accordion extends HTMLElement {
   }
 
   connectedCallback() {
+    this._cacheDOM();
+    this._checkDOMIsCorrect();
     this._eventListeners();
   }
 
@@ -110,9 +126,7 @@ export default class Accordion extends HTMLElement {
    */
   _checkDOMIsCorrect() {
     [...this.$accordionItems].forEach(($accordionItem) => {
-      if (!(
-          $accordionItem instanceof AccordionItem
-      )) {
+      if (!($accordionItem instanceof AccordionItem)) {
         throw new Error(`Accordion should have AccordionItem as children. ${$accordionItem} is not an instance of AccordionItem.`);
       }
     });
@@ -125,12 +139,7 @@ export default class Accordion extends HTMLElement {
    */
   _eventListeners = () => {
     // Focus in
-    this.addEventListener(
-        'focusin',
-        () => (
-            this.classList.add('focus')
-        )
-    );
+    this.addEventListener('focusin', () => this.classList.add('focus'));
 
     // Focus out
     this.addEventListener('focusout', () => {
