@@ -40,12 +40,13 @@ customElements.define('nav-accordion', Accordion);
 </nav-accordion>
 ```
 
-nav-accordion can have two attributes : 
+nav-accordion can have 3 attributes : 
 
 allow-toggle => Allow for each toggle to both open and close its section. Makes it possible for all sections to be closed. Assumes only one section may be open.
 
 allow-multiple => Allow for multiple accordion sections to be expanded at the same time. Assumes data-allow-toggle otherwise the toggle on open sections would be disabled.
 
+(boolean) (default: true) allow-user-events => Allows to specify if the user has the right to control the accordion or not. If this is set to false, you will have to open and close the accordions from the code after the first instantiation
 
 
 nav-accordion-item NEED 2 attributes :
